@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>이미지 분석</title>
+</head>
+<body>
+<form method="post" enctype="multipart/form-data" id="fileUploadForm">
+    <input type="file" name="image" id="file" />
+    <input type="text" name="message" value="hello">
+
+    <button id="analyze"> 분석</button>
+</form>
+<div> 결과 출력</div>
+<script>
+
+    let button = document.getElementById("analyze");
+
+    button.addEventListener("click", function () {
+        let form = document.getElementById("fileUploadForm");
+        let form_data = new FormData(form);
+        button.disabled = true;
+
+        let xhr = new XMLHttpRequest();
+        xhr.open("POST", "http://127.0.0.1:8000/detect", true);
+        xhr.onload = function () {
+            if (this.status >= 200 && this.status < 400) {
+                // Success!
+                let data = JSON.parse(this.response);
+
+                let resultDiv = document.createElement("div");
+                resultDiv.innerHTML = data.message+"<br>";
+                let image_src = "data:image/png;base64,"+data.image;
+
+                let img = document.createElement("img");
+                img.src = image_src;
+                resultDiv.appendChild(img);
+                document.body.appendChild(resultDiv);
+                button.disabled = false;
+
+            } else {
+                // We reached our target server, but it returned an error
+                console.log("Error");
+                alert("Error");
+            }
+        }
+        xhr.error = function () {
+            // There was a connection error of some sort
+            console.log("Connection Error");
+            alert("Connection Error");
+            button.disabled = false;
+        }
+
+        xhr.send(form_data);
+    });
+
+
+</script>
+</body>
+</html>
